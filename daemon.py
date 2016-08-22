@@ -3,7 +3,7 @@ from _thread import start_new_thread as thread
 from os import path
 import telepot
 
-__version__ = "1.9"
+__version__ = "2.0"
 
 import i2c.phsensor as ph
 import i2c.ina219 as ina
@@ -22,33 +22,33 @@ path = path.dirname(path.realpath(__file__))
 
 print()
 print(time.strftime("[%Y-%m-%d %H:%M]"), "[MAIN] Willkommen!")
-print(time.strftime("[%Y-%m-%d %H:%M]"), "[MAIN] Aquarium Steuerung", __version__)
+print(time.strftime("[%Y-%m-%d %H:%M]"), "[MAIN] Fischlicht", __version__)
 print()
 print(time.strftime("[%Y-%m-%d %H:%M]"), "[MAIN] Telegram Bot einrichten")
-bot = telepot.Bot("224114834:AAGnMGmukB6frvTF7SbDeKy1fVUSOeDBpyc")
-userid = "1618828"
+bot = telepot.Bot("...") #BOT ID hier einfügen
+userid = "..." #User ID hier einfügen
 
 def bot_handle(msg):
 	print(time.strftime("[%Y-%m-%d %H:%M]"), "[TBOT] Nachricht empfangen:", msg)
 
 bot.message_loop(bot_handle)
-#bot.sendMessage(userid, "AQ Daemon gestartet")
 
 
-def listen():
+
+def listen(): #Auf Eingaben reagieren indem die Datei "pipe" ausgelesen wird
 	print(time.strftime("[%Y-%m-%d %H:%M]"), "[MAIN] Bereit fuer Eingaben.")
-	open(path + "/pipe", "w").close()
+	open(path + "/pipe", "w").close() # 
 	p = open(path + "/pipe", "r")
 	while True:
 		
 		eingabe = p.read()
-		if eingabe != "":
+		if eingabe != "": #Eingabe vorhanden
 			print(time.strftime("[%Y-%m-%d %H:%M]"), "[MAIN] Eingabe erkannt:", eingabe)
 			try:
 				args = eingabe.split()
-				if args[0] == "led":
-					thread(led.setled,(args,))
-					db.write_setting("lichtprogramm", args[1])
+				if args[0] == "led": # led [lichtprogramm] [dauer]
+					thread(led.setled,(args,)) #Neuer Thread zum Aendern des Lichts
+					db.write_setting("lichtprogramm", args[1]) #Lichtprogramm in Datenbank schreiben
 					
 				elif args[0] == "fan":
 					if len(args) < 2: 
@@ -64,7 +64,7 @@ def listen():
 					nt.setnt(args)
 					db.write_setting("netzteil", args[1])
 					
-				elif args[0] == "cleardb":
+				elif args[0] == "cleardb": #alte DB Eintraege löschen (>7Tage)
 					db.delete_old()
 			except:
 				print("Ungültige Eingabe")
@@ -77,7 +77,7 @@ def listen():
 
 	p.close()
 
-thread(listen,())
+thread(listen,()) #Thread starten
 
 try:
 #LOOP
