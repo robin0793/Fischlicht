@@ -2,15 +2,12 @@ import sqlite3 as sql
 from os import path
 import time
 
-path = path.dirname(path.realpath(__file__))
-
-print(time.strftime("[%Y-%m-%d %H:%M]"), "[ DB ] Verbinde zu Datenbank: ", path + "/aquarium.db")
-db_connection = sql.connect(path + "/aquarium.db", check_same_thread=False)
-db_cursor = db_connection.cursor()
 
 
 def create():
-	command_create = """
+	print(time.strftime("[%Y-%m-%d %H:%M]"), "[ DB ] Tabellen anlegen...")
+
+	command_create_1 = """
 	CREATE TABLE datarecord (
 	timestamp DATETIME DEFAULT (datetime('now','localtime')),
 	temp_1 REAL,
@@ -21,14 +18,18 @@ def create():
 	volt REAL,
 	current REAL,
 	flow REAL,
-	fill REAL );
+	fill REAL ); """
 	
+	
+	command_create_2 = """
 	CREATE TABLE `settings` (
 	`name`	TEXT,
 	`value`	REAL,
 	`text`	TEXT,
-	PRIMARY KEY(name);"""
-	db_cursor.execute(command_create)
+	PRIMARY KEY(name)); """
+	
+	db_cursor.execute(command_create_1)
+	db_cursor.execute(command_create_2)
 	db_connection.commit()
 	
 
@@ -83,3 +84,19 @@ def close():
 	db_connection.close()
 	print(time.strftime("[%Y-%m-%d %H:%M]"), "[ DB ] Verbindung getrennt.")
 #create()
+
+path = path.dirname(path.realpath(__file__))
+
+print(time.strftime("[%Y-%m-%d %H:%M]"), "[ DB ] Verbinde zu Datenbank: ", path + "/aquarium.db")
+db_connection = sql.connect(path + "/aquarium.db", check_same_thread=False)
+db_cursor = db_connection.cursor()
+
+#Ueberpruefen, ob Table existiert (sonst erstellen)
+command_checktable = """
+SELECT count(*) FROM sqlite_master WHERE type='table' AND name='datarecord';"""
+db_cursor.execute(command_checktable)
+value = db_cursor.fetchone()
+if value[0] == 0:
+	create()	
+
+
