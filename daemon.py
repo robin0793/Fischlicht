@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 import sys, time, os
 from _thread import start_new_thread as thread
 from os import path
