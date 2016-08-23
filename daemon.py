@@ -26,14 +26,14 @@ print()
 print(time.strftime("[%Y-%m-%d %H:%M]"), "[MAIN] Willkommen!")
 print(time.strftime("[%Y-%m-%d %H:%M]"), "[MAIN] Fischlicht", __version__)
 print()
-print(time.strftime("[%Y-%m-%d %H:%M]"), "[MAIN] Telegram Bot einrichten")
-bot = telepot.Bot("...") #BOT ID hier einfügen
-userid = "..." #User ID hier einfügen
+#print(time.strftime("[%Y-%m-%d %H:%M]"), "[MAIN] Telegram Bot einrichten")
+#bot = telepot.Bot("...") #BOT ID hier einfügen
+#userid = "..." #User ID hier einfügen
 
 def bot_handle(msg):
 	print(time.strftime("[%Y-%m-%d %H:%M]"), "[TBOT] Nachricht empfangen:", msg)
 
-bot.message_loop(bot_handle)
+#bot.message_loop(bot_handle)
 
 
 
