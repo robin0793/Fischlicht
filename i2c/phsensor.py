@@ -15,13 +15,16 @@ ph = smbus.SMBus(1)
 
 #Berechnung
 def calc_ph(value,pH4,pH7):
-	m = (7.00 - 4.00) / (pH7 - pH4)
-	n = 7.00 - m * pH7
-	
-	pH = m * value + n
-	
-	return(pH)
-	
+	try:
+		m = (7.00 - 4.00) / (pH7 - pH4)
+		n = 7.00 - m * pH7
+		
+		pH = m * value + n
+		
+		return(pH)
+	except:
+		return(0)
+		
 #Calibration Values
 PH4 = 2265
 PH7 = 2052
