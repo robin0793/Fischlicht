@@ -4,11 +4,6 @@ import RPi.GPIO as GPIO
 
 GPIO.setwarnings(False)
 
-steckdosen = {  "filter" 	: 1,
-				"heizer" 	: 2,
-				"co2"		: 4,
-				"D"			: 8,
-				"E"			: 16}
 code = [1,0,1,1,1]
 pin = 17
 
@@ -69,15 +64,14 @@ class RemoteSwitch(object):
                                 time.sleep(self.pulselength/1000000.)
 
 def send(pin, code, status):
-	if device in steckdosen:
-		print(time.strftime("[%Y-%m-%d %H:%M]"), "[FUNK]", device, " ", status)
-		remote = RemoteSwitch(pin, code, pin)
-		if status == 1:
-			remote.switchOn()
-		elif status == 0:
-			remote.switchOff()
-	else: 
-		print(time.strftime("[%Y-%m-%d %H:%M]"), "[FUNK] Unbekannt: ", device)
+
+	print(time.strftime("[%Y-%m-%d %H:%M]"), "[FUNK]", device, " ", status)
+	remote = RemoteSwitch(pin, code, pin)
+	if status == 1:
+		remote.switchOn()
+	elif status == 0:
+		remote.switchOff()
+
 
 							
               
