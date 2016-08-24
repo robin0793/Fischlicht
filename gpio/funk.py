@@ -68,10 +68,10 @@ class RemoteSwitch(object):
                                 GPIO.output(self.pin, b)
                                 time.sleep(self.pulselength/1000000.)
 
-def send(device, status):
+def send(pin, code, status):
 	if device in steckdosen:
 		print(time.strftime("[%Y-%m-%d %H:%M]"), "[FUNK]", device, " ", status)
-		remote = RemoteSwitch(steckdosen[device], code, pin)
+		remote = RemoteSwitch(pin, code, pin)
 		if status == 1:
 			remote.switchOn()
 		elif status == 0:

@@ -62,7 +62,10 @@ SELECT {type} FROM settings
 WHERE name="{setting}"; """.format(type=type, setting=setting)
 	db_cursor.execute(command_read)
 	value = db_cursor.fetchone()
-	return value[0]
+	try: 
+		return value[0]
+	except:
+		return 0
 	
 def read_last(cat):
 	command_rl = """
@@ -70,8 +73,11 @@ SELECT {cat} from datarecord
 ORDER BY timestamp DESC LIMIT 1; """.format(cat=cat)
 	db_cursor.execute(command_rl)
 	value = db_cursor.fetchone()
-	return value[0]
-	
+	try: 
+		return value[0]
+	except:
+		return 0
+		
 def delete_old():
 	command_del = """
 	DELETE FROM datarecord 
