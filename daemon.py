@@ -113,6 +113,7 @@ try:
 	
 	thread(led.setled,(["led", db.read_setting("lichtprogramm", "text"), 1],))
 	
+	fanstatus = 0
 	sent = 0
 	
 	while True:
@@ -143,6 +144,13 @@ try:
 			temp_2 = temp.read("2")
 			temp_r = temp.read("r")
 			temp_c = temp.read("c")
+			if temp_c > 30 and fanstatus == 0:
+				fan.setfan(["fan", 1], int(config["fan"]["pin"]))
+				fanstatus = 1
+			elif temp_c <= 30 and fanstatus == 1:
+				fan.setfan(["fan", 0], int(config["fan"]["pin"]))
+				fanstatus = 0
+			
 			if temp_1 > 29 and sent == 0: 
 				sent = 1
 				bot.sendMessage(userid, "Temperatur zu hoch: " + str(temp_1) + "°C")
