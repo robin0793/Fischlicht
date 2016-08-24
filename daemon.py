@@ -31,7 +31,7 @@ print(time.strftime("[%Y-%m-%d %H:%M]"), "[MAIN] Config einlesen")
 
 config = configparser.ConfigParser()
 config.read("{}/config.ini".format(path))
-print(config.sections())
+
 outlet_code = list(map(int, config["outlet"]["code"].split(",")))
 
 
@@ -76,7 +76,7 @@ def listen(): #Auf Eingaben reagieren indem die Datei "pipe" ausgelesen wird
 						args.append(ntstatus)
 						
 					if config["power"]["mode"] == "gpio":
-						nt.setnt(args, int(config[power][pin]))
+						nt.setnt(args, int(config["power"]["pin"]))
 					elif config["power"]["mode"] == "outlet":
 						funk.send(int(config["power"]["pin"]), outlet_code, 1)
 						
@@ -84,9 +84,10 @@ def listen(): #Auf Eingaben reagieren indem die Datei "pipe" ausgelesen wird
 					
 				elif args[0] == "cleardb": #alte DB Eintraege löschen (>7Tage)
 					db.delete_old()
-			except:
-				print("Ungültige Eingabe")
-			
+			except Exception as e :
+				print(time.strftime("[%Y-%m-%d %H:%M]"), "[MAIN] Ungültige Eingabe?")
+				print(time.strftime("[%Y-%m-%d %H:%M]"), "[MAIN][ERROR]" , e)	
+				
 			p.close()
 			open(path + "/pipe", "w").close()
 			p = open(path + "/pipe", "r")

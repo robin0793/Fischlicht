@@ -64,7 +64,8 @@ WHERE name="{setting}"; """.format(type=type, setting=setting)
 	value = db_cursor.fetchone()
 	try: 
 		return value[0]
-	except:
+	except Exception as e :
+		print(time.strftime("[%Y-%m-%d %H:%M]"), "[ DB ][ERROR]", e)
 		return 0
 	
 def read_last(cat):
@@ -75,7 +76,8 @@ ORDER BY timestamp DESC LIMIT 1; """.format(cat=cat)
 	value = db_cursor.fetchone()
 	try: 
 		return value[0]
-	except:
+	except Exception as e :
+		print(time.strftime("[%Y-%m-%d %H:%M]"), "[ DB ][ERROR]", e)
 		return 0
 		
 def delete_old():
