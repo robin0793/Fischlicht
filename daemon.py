@@ -105,7 +105,6 @@ try:
 #LOOP
 	print(time.strftime("[%Y-%m-%d %H:%M]"), "[MAIN] Starte Daemon.")
 	if int(config["ph"]["active"]) == 1: phwert = db.read_last("ph")
-
 	
 	if config["power"]["mode"] == "gpio":
 		nt.setnt(["nt", db.read_setting("netzteil")], int(config["power"]["pin"]))
@@ -121,6 +120,8 @@ try:
 	
 	while True:
 	
+		db_array = []
+		
 	#PHWERT
 		if int(config["ph"]["active"]) == 1:
 			ph4 = db.read_setting("ph4")
@@ -129,6 +130,7 @@ try:
 			phwert_prev = phwert
 			phwert = ph.read(ph4,ph7)
 			
+			db_array = db.add_write(db_array, "ph", phwert)
 			
 			for n in range(0,5):
 				if abs(phwert - phwert_prev) < 0.2: break
@@ -151,16 +153,18 @@ try:
 				if os.path.isfile("/sys/bus/w1/devices/{}/w1_slave".format(temp_sensors[g])) == True:
 					sensor_array = config["temp"][temp_sensors[g]].split(",")
 					temp_array[g][0] = temp.read(temp_sensors[g], sensor_array[0])
-
+					
+					db_array = db.add_write(db_array, "temp_{}".format(sensor_array[0]), temp_array[g][0])
+					
 					if len (sensor_array) > 3 and temp_array[g][0] < float(sensor_array[3]) and temp_array[g][2] == 0: 
-						alert("Temperatur {} kritisch niedrig".format(sensor_array[0]), temperature, "°C", userid)
+						alert("Temperatur {} kritisch niedrig".format(sensor_array[0]), temp_array[g][0], "°C", userid)
 						temp_array[g][2] = 1
 					elif temp_array[g][0] < float(sensor_array[1]) and temp_array[g][2] == 0: 
 						if sensor_array[0] == "case":
 							fan.setfan(["fan", 0], int(config["fan"]["pin"]))
 							fanstatus = 0
 						else:
-							alert("Temperatur {} zu niedring".format(sensor_array[0]), temperature, "°C", userid)
+							alert("Temperatur {} zu niedring".format(sensor_array[0]), temp_array[g][0], "°C", userid)
 							temp_array[g][1] = 1
 						
 					if len (sensor_array) > 4 and temp_array[g][0] > float(sensor_array[4]) and temp_array[g][2] == 0: 
@@ -168,14 +172,14 @@ try:
 							fan.setfan(["fan", 0], int(config["fan"]["pin"]))
 							fanstatus = 0
 						#kein else!
-						alert("Temperatur {} kritisch hoch".format(sensor_array[0]), temperature, "°C", userid)
+						alert("Temperatur {} kritisch hoch".format(sensor_array[0]), temp_array[g][0], "°C", userid)
 						temp_array[g][2] = 1
 					elif temp_array[g][0] > float(sensor_array[2]) and temp_array[g][2] == 0: 
 						if sensor_array[0] == "case":
 							fan.setfan(["fan", 0], int(config["fan"]["pin"]))
 							fanstatus = 0
 						else:
-							alert("Temperatur {} zu hoch".format(sensor_array[0]), temperature, "°C", userid)
+							alert("Temperatur {} zu hoch".format(sensor_array[0]), temp_array[g][0], "°C", userid)
 							temp_array[g][1] = 1
 							
 					# Zurücksetzen, falls Temperatur wieder ok (+- 0.2 Grad)
@@ -196,13 +200,15 @@ try:
 			else:
 				current = ina.current()
 			
+			db_array = db.add_write(db_array, "volt", volt)
+			db_array = db.add_write(db_array, "current", current)
 			
 		#f= open(path + "/phvolt.csv","a")
 		#f.write("{};{}\n".format(str(phwert).replace(".",","),str(volt).replace(".",",")))
 		#f.close()		
 			
 	#WRITE TO DATABASE
-		#db.write_all(temp_1 = temp_1, temp_2 = temp_2, temp_r = temp_r, temp_c = temp_c, ph = phwert, volt = volt, current = current)
+		db.write_all(db_array)
 			
 		print()
 		time.sleep(int(config["general"]["interval"]))
