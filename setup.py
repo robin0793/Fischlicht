@@ -120,10 +120,11 @@ period = 0.2
 [temp]
 active=1
 # sensor-id=["name" [, low_warning, high_warning [, low_alert, high_alert]]
-28-000005986837 = "hinten", 26.5, 28.5, 23, 31
-28-000005985d20 = "vorn", 26.5, 28.5, 23, 31 
-28-000005af42fe = "raum", 16, 28 
-10-000802e4371a = "case", -200, 40, -273, 50
+28-000005986837 = hinten, 26.5, 28.5, 23, 31
+28-000005985d20 = vorn, 26.5, 28.5, 23, 31 
+28-000005af42fe = raum, 16, 28 
+# Temp-Sensor mit Bezeichnung "case" steuert den Luefter [low_warning = Lüfter an, low_alert = Lüfter aus] 
+10-000802e4371a = case, 30, 40, 28, 50
 
 [outlet]
 #devices: A = 1, B = 2, C = 4, D = 8, E = 16  
