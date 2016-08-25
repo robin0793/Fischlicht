@@ -1,13 +1,7 @@
 import time
 
-def read(sensor):
+def read(deviceid, name):
 
-	dict = {"1" : "28-000005986837",
-			"2" : "28-000005985d20",
-			"r" : "28-000005af42fe",
-			"c" : "10-000802e4371a"}
-			
-	deviceid = dict[sensor]
 	
 	try:
 		fileobj = open("/sys/bus/w1/devices/"+deviceid+"/w1_slave",'r')
@@ -25,9 +19,9 @@ def read(sensor):
 	if status=="YES":
 		tempstr= lines[1][-6:-1]
 		tempvalue=float(tempstr)/1000
-		print(time.strftime("[%Y-%m-%d %H:%M]"), "[TEMP]", sensor, ":", round(tempvalue,1))
+		print(time.strftime("[%Y-%m-%d %H:%M]"), "[TEMP]", name, ":", round(tempvalue,1))
 		return round(tempvalue,1)
 	else:
-		print(time.strftime("[%Y-%m-%d %H:%M]"), "[TEMP] Fehler beim Lesen des Sensors:", sensor)
+		print(time.strftime("[%Y-%m-%d %H:%M]"), "[TEMP] Fehler beim Lesen des Sensors:", name)
 		error = 1
 		return 0

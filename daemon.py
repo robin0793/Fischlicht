@@ -34,6 +34,9 @@ config.read("{}/config.ini".format(path))
 
 outlet_code = list(map(int, config["outlet"]["code"].split(",")))
 
+def alert(nachricht, wert, einheit="", userid=""):
+	print(time.strftime("[%Y-%m-%d %H:%M]"), "[ALRT] {}: {} {}".format(nachricht, wert, einheit))
+	if userid != "": bot.sendMessage(userid, "{}: {} {}".format(nachricht, wert, einheit))
 
 def bot_handle(msg):
 	print(time.strftime("[%Y-%m-%d %H:%M]"), "[TBOT] Nachricht empfangen:", msg)
@@ -45,7 +48,7 @@ if int(config["telebot"]["active"]) == 1:
 	userid = config["telebot"]["user_id"] #User ID hier einfügen
 	
 	bot.message_loop(bot_handle)
-
+else: userid = ""
 
 
 def listen(): #Auf Eingaben reagieren indem die Datei "pipe" ausgelesen wird
@@ -129,35 +132,60 @@ try:
 			
 			for n in range(0,5):
 				if abs(phwert - phwert_prev) < 0.2: break
-			if phwert >= 7.3 and phstatus == 0:
+			if phwert >= float(config["ph"]["ph_value"]) and phstatus == 0:
 				if db.read_setting("netzteil") == 1:
 					funk.send (int (config["ph"]["outlet"]), outlet_code, 1)
 					db.write_setting("co2", 1)
-			elif phwert <=7.25 and phstatus == 1:
+			elif phwert <= float(config["ph"]["ph_value"]) - 0.5 and phstatus == 1:
 				funk.send (int (config["ph"]["outlet"]), outlet_code, 0)
 				db.write_setting("co2", 0)
 			
 		
 	#TEMP
 		if int(config["temp"]["active"]) == 1:
-			temp_1 = temp.read("1")
-			temp_2 = temp.read("2")
-			temp_r = temp.read("r")
-			temp_c = temp.read("c")
-			if temp_c > 30 and fanstatus == 0:
-				fan.setfan(["fan", 1], int(config["fan"]["pin"]))
-				fanstatus = 1
-			elif temp_c <= 30 and fanstatus == 1:
-				fan.setfan(["fan", 0], int(config["fan"]["pin"]))
-				fanstatus = 0
+			temp_sensors = config.options("temp")
+			temp_array = [[0,0,0]] * len(temp_sensors)
 			
-			if temp_1 > 29 and sent == 0: 
-				sent = 1
-				bot.sendMessage(userid, "Temperatur zu hoch: " + str(temp_1) + "°C")
-			elif temp_1 < 28 and sent == 1:
-				sent = 0
-				bot.sendMessage(userid, "Temperatur wieder in Ordnung")
-			
+			for g in range(1, len(temp_sensors)):
+				
+				if os.path.isfile("/sys/bus/w1/devices/{}/w1_slave".format(temp_sensors[g])) == True:
+					sensor_array = config["temp"][temp_sensors[g]].split(",")
+					temp_array[g][0] = temp.read(temp_sensors[g], sensor_array[0])
+
+					if len (sensor_array) > 3 and temp_array[g][0] < float(sensor_array[3]) and temp_array[g][2] == 0: 
+						alert("Temperatur {} kritisch niedrig".format(sensor_array[0]), temperature, "°C", userid)
+						temp_array[g][2] = 1
+					elif temp_array[g][0] < float(sensor_array[1]) and temp_array[g][2] == 0: 
+						if sensor_array[0] == "case":
+							fan.setfan(["fan", 0], int(config["fan"]["pin"]))
+							fanstatus = 0
+						else:
+							alert("Temperatur {} zu niedring".format(sensor_array[0]), temperature, "°C", userid)
+							temp_array[g][1] = 1
+						
+					if len (sensor_array) > 4 and temp_array[g][0] > float(sensor_array[4]) and temp_array[g][2] == 0: 
+						if sensor_array[0] == "case":
+							fan.setfan(["fan", 0], int(config["fan"]["pin"]))
+							fanstatus = 0
+						#kein else!
+						alert("Temperatur {} kritisch hoch".format(sensor_array[0]), temperature, "°C", userid)
+						temp_array[g][2] = 1
+					elif temp_array[g][0] > float(sensor_array[2]) and temp_array[g][2] == 0: 
+						if sensor_array[0] == "case":
+							fan.setfan(["fan", 0], int(config["fan"]["pin"]))
+							fanstatus = 0
+						else:
+							alert("Temperatur {} zu hoch".format(sensor_array[0]), temperature, "°C", userid)
+							temp_array[g][1] = 1
+							
+					# Zurücksetzen, falls Temperatur wieder ok (+- 0.2 Grad)
+					if float(sensor_array[1])+0.2 < temp_array[g][0] < float(sensor_array[2])-0.2: #gruener Bereich
+						temp_array[g][1] = 0 #Warning aus
+						temp_array[g][2] = 0 #Alarm aus
+					elif float(sensor_array[3])+0.2 < temp_array[g][0] < float(sensor_array[4])-0.2: #Warnung Bereich
+						temp_array[g][2] = 0 #Alarm aus
+
+		
 		
 	#ELECTRIC 
 		if int(config["ina219"]["active"]) == 1:
@@ -174,7 +202,7 @@ try:
 		#f.close()		
 			
 	#WRITE TO DATABASE
-		db.write_all(temp_1 = temp_1, temp_2 = temp_2, temp_r = temp_r, temp_c = temp_c, ph = phwert, volt = volt, current = current)
+		#db.write_all(temp_1 = temp_1, temp_2 = temp_2, temp_r = temp_r, temp_c = temp_c, ph = phwert, volt = volt, current = current)
 			
 		print()
 		time.sleep(int(config["general"]["interval"]))
