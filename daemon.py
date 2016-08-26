@@ -33,6 +33,8 @@ config = configparser.ConfigParser()
 config.read("{}/config.ini".format(path))
 
 outlet_code = list(map(int, config["outlet"]["code"].split(",")))
+led_assign = list(map(int, config["led"]["assign"].split(",")))
+
 
 def alert(nachricht, wert, einheit="", userid=""):
 	print(time.strftime("[%Y-%m-%d %H:%M]"), "[ALRT] {}: {} {}".format(nachricht, wert, einheit))
@@ -63,7 +65,7 @@ def listen(): #Auf Eingaben reagieren indem die Datei "pipe" ausgelesen wird
 			try:
 				args = eingabe.split()
 				if args[0] == "led": # led [lichtprogramm] [dauer]
-					thread(led.setled,(args,)) #Neuer Thread zum Aendern des Lichts
+					thread(led.setled,(args, led_assign,)) #Neuer Thread zum Aendern des Lichts
 					db.write_setting("lichtprogramm", args[1]) #Lichtprogramm in Datenbank schreiben
 					
 				elif args[0] == "fan":
@@ -113,7 +115,7 @@ try:
 	
 
 	
-	thread(led.setled,(["led", db.read_setting("lichtprogramm", "text"), 1],))
+	thread(led.setled,(["led", db.read_setting("lichtprogramm", "text"), 1], led_assign,))
 	
 	fanstatus = 0
 	sent = 0
@@ -146,41 +148,48 @@ try:
 	#TEMP
 		if int(config["temp"]["active"]) == 1:
 			temp_sensors = config.options("temp")
-			temp_array = [[0,0,0]] * len(temp_sensors)
-			
+			try: 
+				temp_array 
+			except NameError:
+				temp_array = []
+				for g in range(0, len(temp_sensors)):
+					temp_array.append([0, 0, 0])
+
 			for g in range(1, len(temp_sensors)):
-				
+
 				if os.path.isfile("/sys/bus/w1/devices/{}/w1_slave".format(temp_sensors[g])) == True:
+					
 					sensor_array = config["temp"][temp_sensors[g]].split(",")
 					temp_array[g][0] = temp.read(temp_sensors[g], sensor_array[0])
 					
 					db_array = db.add_write(db_array, "temp_{}".format(sensor_array[0]), temp_array[g][0])
 					
+					#low_alert
 					if len (sensor_array) > 3 and temp_array[g][0] < float(sensor_array[3]) and temp_array[g][2] == 0: 
-						alert("Temperatur {} kritisch niedrig".format(sensor_array[0]), temp_array[g][0], "°C", userid)
-						temp_array[g][2] = 1
-					elif temp_array[g][0] < float(sensor_array[1]) and temp_array[g][2] == 0: 
 						if sensor_array[0] == "case":
 							fan.setfan(["fan", 0], int(config["fan"]["pin"]))
 							fanstatus = 0
 						else:
-							alert("Temperatur {} zu niedring".format(sensor_array[0]), temp_array[g][0], "°C", userid)
-							temp_array[g][1] = 1
-						
+							alert("Temperatur {} kritisch niedrig".format(sensor_array[0]), temp_array[g][0], "°C", userid)
+							temp_array[g][2] = 1
+					#low_warning		
+					elif temp_array[g][0] < float(sensor_array[1]) and temp_array[g][1] == 0: 
+						alert("Temperatur {} zu niedrig".format(sensor_array[0]), temp_array[g][0], "°C", userid)
+						temp_array[g][1] = 1
+					if temp_array[g][0] > float(sensor_array[1]) and sensor_array[0] == "case":
+						fan.setfan(["fan", 1], int(config["fan"]["pin"]))
+						fanstatus = 1
+					
+					#high_alert		
 					if len (sensor_array) > 4 and temp_array[g][0] > float(sensor_array[4]) and temp_array[g][2] == 0: 
-						if sensor_array[0] == "case":
-							fan.setfan(["fan", 0], int(config["fan"]["pin"]))
-							fanstatus = 0
-						#kein else!
 						alert("Temperatur {} kritisch hoch".format(sensor_array[0]), temp_array[g][0], "°C", userid)
 						temp_array[g][2] = 1
-					elif temp_array[g][0] > float(sensor_array[2]) and temp_array[g][2] == 0: 
-						if sensor_array[0] == "case":
-							fan.setfan(["fan", 0], int(config["fan"]["pin"]))
-							fanstatus = 0
-						else:
-							alert("Temperatur {} zu hoch".format(sensor_array[0]), temp_array[g][0], "°C", userid)
-							temp_array[g][1] = 1
+					
+					#high_warning	
+					elif temp_array[g][0] > float(sensor_array[2]) and temp_array[g][1] == 0: 
+
+						alert("Temperatur {} zu hoch".format(sensor_array[0]), temp_array[g][0], "°C", userid)
+						temp_array[g][1] = 1
 							
 					# Zurücksetzen, falls Temperatur wieder ok (+- 0.2 Grad)
 					if float(sensor_array[1])+0.2 < temp_array[g][0] < float(sensor_array[2])-0.2: #gruener Bereich
@@ -189,7 +198,6 @@ try:
 					elif float(sensor_array[3])+0.2 < temp_array[g][0] < float(sensor_array[4])-0.2: #Warnung Bereich
 						temp_array[g][2] = 0 #Alarm aus
 
-		
 		
 	#ELECTRIC 
 		if int(config["ina219"]["active"]) == 1:
