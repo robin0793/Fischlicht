@@ -1,3 +1,5 @@
+
+
 #Lichtprogramme
 off=0
 on=4095
@@ -213,3 +215,13 @@ wolkig =	  [[0,	 	 0,	 	 0,		#Lampe 1: 1. Reihe, rechts
 				-1,	 	-1,	 	-1,		#Lampe 5: 2. Reihe, links
 				-1,	 	-1,	 	-1,		#Lampe 6: 3. Reihe
 				-1,	 	-1,	 	-1]]	#Lampe 7: 4. Reihe
+				
+zuordnung =		 {	"normal"		:	normal			,
+				"mondlicht"			:	mondlicht		,
+				"mondschein"		:	mondschein		,
+				"sonnenaufgang"		:	sonnenaufgang	,
+				"sonnenunter"		:	sonnenunter		,
+				"max"				:	max				,
+				"warm"				:	warm			,
+				"wolkig"			:	wolkig			,
+				"dim"				:	dim				}

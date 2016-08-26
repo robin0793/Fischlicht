@@ -27,26 +27,18 @@ else:
 	import spi.lichtprogramme as lp
 
 #ZUORDNUNG KOMMANDOZEILE > LICHTPROGRAMM
-zuordnung =		 {	"normal"		:	lp.normal			,
-				"mondlicht"			:	lp.mondlicht		,
-				"mondschein"		:	lp.mondschein		,
-				"sonnenaufgang"		:	lp.sonnenaufgang	,
-				"sonnenunter"		:	lp.sonnenunter		,
-				"max"				:	lp.max				,
-				"warm"				:	lp.warm				,
-				"wolkig"			:	lp.wolkig			,
-				"dim"				:	lp.dim				}
+zuordnung =	lp.zuordnung
 
 #ARRAY ANPASSEN - Legt Stelle fest, in der der Wert des Lichtprogrammes im Array stehen muss, d.h. auf welchen Kanal der Wert übertragen werden soll
 #						R	G	B
-zuordnung_tlc =		 [	4,	5,	3,	#Lampe 1: 1. Reihe, rechts
-						0,	1,	2,	#Lampe 2: 1. Reihe, links
-						16,	17,	15,	#Lampe 3: 2. Reihe, rechts
-						12,	13,	14,	#Lampe 4: 2. Reihe, mittig
-						9,	10,	11,	#Lampe 5: 2. Reihe, links
-						18,	20,	19,	#Lampe 6: 3. Reihe
-						22,	21,	23,	#Lampe 7: 4. Reihe
-						6,	7,	8]	#Nicht belegt
+#zuordnung_tlc =		 [	4,	5,	3,	#Lampe 1: 1. Reihe, rechts
+#						0,	1,	2,	#Lampe 2: 1. Reihe, links
+#						16,	17,	15,	#Lampe 3: 2. Reihe, rechts
+#						12,	13,	14,	#Lampe 4: 2. Reihe, mittig
+#						9,	10,	11,	#Lampe 5: 2. Reihe, links
+#						18,	20,	19,	#Lampe 6: 3. Reihe
+#						22,	21,	23,	#Lampe 7: 4. Reihe
+#						6,	7,	8]	#Nicht belegt
 
 #FUNKTION UEBERTRAGUNG 
 def transfer(intens):
@@ -77,7 +69,7 @@ def dynamic(intens_dy, intens_ac):
 	return intens_dy
 
 #MAIN
-def setled(arg_array): # 0 = Lichtprogramm, 1 = Dauer
+def setled(arg_array, zuordnung_tlc): # 0 = Lichtprogramm, 1 = Dauer
 	try:
 		f = open(path+"/lichtwerte.db", "rb")
 		intens_now = pickle.load(f)
@@ -188,9 +180,5 @@ def setled(arg_array): # 0 = Lichtprogramm, 1 = Dauer
 		print(time.strftime("[%Y-%m-%d %H:%M]"), "[LEDS] Programm unterbrochen")
 		quit()
 
-	
-if __name__ == "__main__":
-	from sys import argv
-	if len(argv) > 1:
-		setled(argv)
+
 	
