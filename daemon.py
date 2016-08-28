@@ -165,7 +165,7 @@ try:
 					db_array = db.add_write(db_array, "temp_{}".format(sensor_array[0]), temp_array[g][0])
 					
 					#low_alert
-					if len (sensor_array) > 3 and temp_array[g][0] < float(sensor_array[3]) and temp_array[g][2] == 0: 
+					if len(sensor_array) > 3 and temp_array[g][0] < float(sensor_array[3]) and temp_array[g][2] == 0: 
 						if sensor_array[0] == "case":
 							fan.setfan(["fan", 0], int(config["fan"]["pin"]))
 							fanstatus = 0
@@ -173,7 +173,7 @@ try:
 							alert("Temperatur {} kritisch niedrig".format(sensor_array[0]), temp_array[g][0], "°C", userid)
 							temp_array[g][2] = 1
 					#low_warning		
-					elif temp_array[g][0] < float(sensor_array[1]) and temp_array[g][1] == 0: 
+					elif len(sensor_array) > 1 and temp_array[g][0] < float(sensor_array[1]) and temp_array[g][1] == 0: 
 						alert("Temperatur {} zu niedrig".format(sensor_array[0]), temp_array[g][0], "°C", userid)
 						temp_array[g][1] = 1
 					if temp_array[g][0] > float(sensor_array[1]) and sensor_array[0] == "case":
@@ -181,21 +181,21 @@ try:
 						fanstatus = 1
 					
 					#high_alert		
-					if len (sensor_array) > 4 and temp_array[g][0] > float(sensor_array[4]) and temp_array[g][2] == 0: 
+					if len(sensor_array) > 4 and temp_array[g][0] > float(sensor_array[4]) and temp_array[g][2] == 0: 
 						alert("Temperatur {} kritisch hoch".format(sensor_array[0]), temp_array[g][0], "°C", userid)
 						temp_array[g][2] = 1
 					
 					#high_warning	
-					elif temp_array[g][0] > float(sensor_array[2]) and temp_array[g][1] == 0: 
+					elif len(sensor_array) > 2 and temp_array[g][0] > float(sensor_array[2]) and temp_array[g][1] == 0: 
 
 						alert("Temperatur {} zu hoch".format(sensor_array[0]), temp_array[g][0], "°C", userid)
 						temp_array[g][1] = 1
 							
 					# Zurücksetzen, falls Temperatur wieder ok (+- 0.2 Grad)
-					if float(sensor_array[1])+0.2 < temp_array[g][0] < float(sensor_array[2])-0.2: #gruener Bereich
+					if len(sensor_array) > 2 and float(sensor_array[1])+0.2 < temp_array[g][0] < float(sensor_array[2])-0.2: #gruener Bereich
 						temp_array[g][1] = 0 #Warning aus
 						temp_array[g][2] = 0 #Alarm aus
-					elif float(sensor_array[3])+0.2 < temp_array[g][0] < float(sensor_array[4])-0.2: #Warnung Bereich
+					elif len(sensor_array) > 4 and float(sensor_array[3])+0.2 < temp_array[g][0] < float(sensor_array[4])-0.2: #Warnung Bereich
 						temp_array[g][2] = 0 #Alarm aus
 
 		
