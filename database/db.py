@@ -1,12 +1,16 @@
 import sqlite3 as sql
 from os import path
 import time
+import logging
+
+log = logging.getLogger("daemon")
+errlog = logging.getLogger("error")
 
 # UPDATE datarecord  SET temp_1 = 1 WHERE id=1;
 # =(datetime('now','localtime'))
 
 def create():
-	print(time.strftime("[%Y-%m-%d %H:%M]"), "[ DB ] Tabellen anlegen...")
+	log.info("Tabellen anlegen...")
 
 	command_create_1 = """
 	CREATE TABLE datarecord (timestamp DATETIME DEFAULT (datetime('now','localtime'))); """
@@ -40,7 +44,7 @@ def write_all (arr):
 		
 		db_cursor.execute(command_add)
 		db_connection.commit()
-		print(time.strftime("[%Y-%m-%d %H:%M]"), "[ DB ] Werte in Datenbank geschrieben.")
+		log.info("Werte in Datenbank geschrieben.")
 
 def add_write(arr, name, value):
 	try:
@@ -51,8 +55,8 @@ def add_write(arr, name, value):
 		
 	except Exception as e:
 		try:
-			print(time.strftime("[%Y-%m-%d %H:%M]"), "[ DB ][WARN] Spalte \"{}\" existiert nicht".format(name))
-			print(time.strftime("[%Y-%m-%d %H:%M]"), "[ DB ][WARN] Spalte wird angelegt...")
+			log.warn("Spalte \"{}\" existiert nicht".format(name))
+			log.info("Spalte wird angelegt...")
 			
 			command_createcolumn = "ALTER TABLE datarecord ADD COLUMN {} REAL;".format(name)
 			db_cursor.execute(command_createcolumn)
@@ -61,8 +65,8 @@ def add_write(arr, name, value):
 			
 			arr.append([name, value])
 		except Exception as ee:
-			print(time.strftime("[%Y-%m-%d %H:%M]"), "[ DB ][ERROR]", e)
-			print(time.strftime("[%Y-%m-%d %H:%M]"), "[ DB ][ERROR]", ee)
+			errlog.error(e)
+			errlog.error(ee)
 
 	return (arr)
 	
@@ -81,10 +85,10 @@ WHERE name="{setting}"; """.format(datatype=datatype,value=value,setting=setting
 	try:
 		db_cursor.execute(command_set)
 		db_connection.commit()
-		print(time.strftime("[%Y-%m-%d %H:%M]"), "[ DB ] Wert in Datenbank geschrieben: ", setting, ": ", value)
+		log.info("Wert in Datenbank geschrieben: ", setting, ": ", value)
 	except Exception as e :
 		
-		print(time.strftime("[%Y-%m-%d %H:%M]"), "[ DB ][ERROR]", e)
+		errlog.error(e)
 		command_add = "INSERT INTO settings (\"name\") VALUES ({});".format(setting)
 		
 		db_cursor.execute(command_add)
@@ -92,7 +96,7 @@ WHERE name="{setting}"; """.format(datatype=datatype,value=value,setting=setting
 		
 		db_cursor.execute(command_set)
 		db_connection.commit()
-		print(time.strftime("[%Y-%m-%d %H:%M]"), "[ DB ] Wert in Datenbank geschrieben: ", setting, ": ", value)
+		log.info("Wert in Datenbank geschrieben: {}: {}".format(setting,value))
 		
 		return 0
 	
@@ -106,7 +110,7 @@ def read_setting(setting, type="value"):
 		return value[0]
 	except Exception as e :
 		
-		print(time.strftime("[%Y-%m-%d %H:%M]"), "[ DB ][ERROR]", e)
+		errlog.error(e)
 		command_add = "INSERT INTO settings (\"name\") VALUES (\"{}\"); ".format(setting)
 		
 		db_cursor.execute(command_add)
@@ -125,7 +129,7 @@ ORDER BY timestamp DESC LIMIT 1; """.format(cat=cat)
 	
 		return value[0]
 	except Exception as e :
-		print(time.strftime("[%Y-%m-%d %H:%M]"), "[ DB ][ERROR]", e)
+		errlog.error(e)
 		
 		return 0
 		
@@ -135,16 +139,16 @@ def delete_old():
 	WHERE timestamp <= date('now','-7 day'); """
 	db_cursor.execute(command_del)
 	db_connection.commit()
-	print(time.strftime("[%Y-%m-%d %H:%M]"), "[ DB ] Alte Eintraege geloescht.")
+	log.info("Alte Eintraege geloescht.")
 	
 def close():
 	db_connection.close()
-	print(time.strftime("[%Y-%m-%d %H:%M]"), "[ DB ] Verbindung getrennt.")
+	log.info("Verbindung getrennt.")
 #create()
 
 path = path.dirname(path.realpath(__file__))
 
-print(time.strftime("[%Y-%m-%d %H:%M]"), "[ DB ] Verbinde zu Datenbank: ", path + "/aquarium.db")
+log.info("Verbinde zu Datenbank: {}/aquarium.db".format(path))
 db_connection = sql.connect(path + "/aquarium.db", check_same_thread=False)
 db_cursor = db_connection.cursor()
 

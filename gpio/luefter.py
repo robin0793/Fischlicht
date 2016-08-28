@@ -3,6 +3,10 @@ import RPi.GPIO as GPIO
 import sys
 import time
 from os import path
+import logging
+
+log = logging.getLogger("daemon")
+errlog = logging.getLogger("error")
 
 GPIO.setmode(GPIO.BCM)
 #GPIO.setwarnings(False)
@@ -15,12 +19,12 @@ def setfan(args, pin):
 
 	if int(args[1]) == 0:
 		GPIO.output(pin, GPIO.LOW)
-		print(time.strftime("[%Y-%m-%d %H:%M]"), "[FAN ] Lüfter ausgeschaltet")
+		log.info("Lüfter ausgeschaltet")
 	elif int(args[1]) == 1:
 		GPIO.output(pin, GPIO.HIGH)
-		print(time.strftime("[%Y-%m-%d %H:%M]"), "[FAN ] Lüfter eingeschaltet")
+		log.info("Lüfter eingeschaltet")
 	else:
-		print(time.strftime("[%Y-%m-%d %H:%M]"), "[FAN ] Falsches Argument")
+		log.warn("Falsches Argument")
 	
 	
 	#status = int(arg_array[1])

@@ -2,7 +2,10 @@
 
 import RPi.GPIO as GPIO
 import time
+import logging
 
+log = logging.getLogger("daemon")
+errlog = logging.getLogger("error")
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
@@ -17,9 +20,9 @@ def setnt(args, pin):
 
 	if args[1] == 0:
 		GPIO.output(pin, GPIO.LOW)
-		print(time.strftime("[%Y-%m-%d %H:%M]"), "[ NT ] Netzteil ausgeschaltet")
+		log.info("Netzteil ausgeschaltet")
 	elif args[1] == 1:
 		GPIO.output(pin, GPIO.HIGH)
-		print(time.strftime("[%Y-%m-%d %H:%M]"), "[ NT ] Netzteil eingeschaltet")
+		log.info("Netzteil eingeschaltet")
 	else:
-		print(time.strftime("[%Y-%m-%d %H:%M]"), "[ NT ] Falsches Argument")
+		log.warn("Falsches Argument")

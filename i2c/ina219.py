@@ -2,6 +2,10 @@
 
 import smbus
 import time
+import logging
+
+log = logging.getLogger("daemon")
+errlog = logging.getLogger("error")
 
 #Shunt Voltage: 0x01
 #Bus Voltage: 0x02
@@ -13,7 +17,7 @@ import time
 address = 0x40
 
 #INIT
-print(time.strftime("[%Y-%m-%d %H:%M]"), "[ELEC] Initiere I2C-Verbindung...")
+log.info("Initiere I2C-Verbindung...")
 
 ina219 = smbus.SMBus(1)
 mask = 0b11111111
@@ -22,30 +26,30 @@ mask = 0b11111111
 
 ina219.write_i2c_block_data(address,0x00,[0x1F, 0xFF])
 ina219.write_i2c_block_data(address,0x05,[0x14, 0xF8])
-print(time.strftime("[%Y-%m-%d %H:%M]"), "[ELEC] Konfiguration abgeschlossen")
+log.info("Konfiguration abgeschlossen")
 
 def shunt():	#Read Shunt Voltage
 	v_s = ina219.read_i2c_block_data(address,0x01,2)
 	voltage_shunt = (((v_s[0] & mask) << 8) + v_s[1])
-	print(time.strftime("[%Y-%m-%d %H:%M]"), "[ELEC] Shunt Spannung:", voltage_shunt/100, "mV")
+	log.info("Shunt Spannung:", voltage_shunt/100, "mV")
 	return voltage_shunt/100 #mV
 
 def bus():
 	v_b = ina219.read_i2c_block_data(address,0x02,2)
 	voltage_bus = (((v_b[0] & mask) << 8) + v_b[1])
-	print(time.strftime("[%Y-%m-%d %H:%M]"), "[ELEC] Bus Spannung:", round(voltage_bus/2000, 2), "V")
+	log.info("Bus Spannung:", round(voltage_bus/2000, 2), "V")
 	return round(voltage_bus/2000, 2) #V
 
 def power():
 	po = ina219.read_i2c_block_data(address,0x03,2)
 	power = (((po[0] & mask) << 8) + po[1])
-	print(time.strftime("[%Y-%m-%d %H:%M]"), "[ELEC] Leistungsaufnahme:", power/50, "W")
+	log.info("Leistungsaufnahme:", power/50, "W")
 	return power/50 #W
 	
 def current():
 	cu = ina219.read_i2c_block_data(address,0x04,2)
 	current = (((cu[0] & mask) << 8) + cu[1])
-	print(time.strftime("[%Y-%m-%d %H:%M]"), "[ELEC] Stromaufnahme:", current/1000, "A")
+	log.info("[ELEC] Stromaufnahme:", current/1000, "A")
 	return current/1000 #A
 
 if __name__ == "__main__":

@@ -8,7 +8,10 @@ from datetime import datetime
 import pickle 
 from os import path
 from numpy import array, array_equal, subtract, absolute, amax
+import logging
 
+log = logging.getLogger("daemon")
+errlog = logging.getLogger("error")
 
 
 #GPIO INIT 
@@ -78,13 +81,13 @@ def setled(arg_array, zuordnung_tlc): # 0 = Lichtprogramm, 1 = Dauer
 
 
 		if len(arg_array) < 2:	
-			print(time.strftime("[%Y-%m-%d %H:%M]"), "[LEDS] Aktuelles Programm neu setzen")
+			log.info("Aktuelles Programm neu setzen")
 			transfer(intens_now)
 			return None
 		
 		if arg_array[1] in zuordnung:
 			intens_set=zuordnung[arg_array[1]]
-			print(time.strftime("[%Y-%m-%d %H:%M]"), "[LEDS] Starte Lichtprogramm:", arg_array[1])
+			log.info("Starte Lichtprogramm:", arg_array[1])
 		else:
 			intens_set=lp.aus
 			
@@ -123,7 +126,7 @@ def setled(arg_array, zuordnung_tlc): # 0 = Lichtprogramm, 1 = Dauer
 				quit()
 			
 			if array_equal (intens_wanted, intens_now) == True:
-				print(time.strftime("[%Y-%m-%d %H:%M]"), "[LEDS] Aktuelles Programm neu setzen")
+				log.info("Aktuelles Programm neu setzen")
 				transfer(intens_now)
 				quit()
 				
@@ -135,7 +138,7 @@ def setled(arg_array, zuordnung_tlc): # 0 = Lichtprogramm, 1 = Dauer
 					zeit=int(arg_array[2])
 					dauer = zeit*60/(1+multi) #in Sekunden
 				except:
-					print(time.strftime("[%Y-%m-%d %H:%M]"), "[LEDS] Falsche Zeitangabe")		
+					log.warn("Falsche Zeitangabe")		
 
 			maxstep = 10 # Maximale Differenz der Farbwerte zwischen zwei schritten
 			
@@ -152,10 +155,10 @@ def setled(arg_array, zuordnung_tlc): # 0 = Lichtprogramm, 1 = Dauer
 			steps = int(round(dauer / period))	
 			
 
-			print(time.strftime("[%Y-%m-%d %H:%M]"), "[LEDS] Dauer: ", dauer)
-			print(time.strftime("[%Y-%m-%d %H:%M]"), "[LEDS] Schrittweite: ", maxstep)
-			print(time.strftime("[%Y-%m-%d %H:%M]"), "[LEDS] Periodendauer: ", period)
-			print(time.strftime("[%Y-%m-%d %H:%M]"), "[LEDS] Anzahl Übertragungen:", steps)
+			log.info("Dauer: {}".format(dauer))
+			log.info("Schrittweite: {}".format(maxstep))
+			log.info("Periodendauer: {}".format(period))
+			log.info("Anzahl Übertragungen: {}".format(steps))
 
 
 				
@@ -169,7 +172,7 @@ def setled(arg_array, zuordnung_tlc): # 0 = Lichtprogramm, 1 = Dauer
 				delta = t_end - t_start
 				time.sleep(period - delta.total_seconds())
 			transfer(intens_wanted)
-			print(time.strftime("[%Y-%m-%d %H:%M]"), "[LEDS] Lichtprogramm abgeschlossen:", arg_array[1])
+			log.info("Lichtprogramm abgeschlossen:{}".format(arg_array[1]))
 			print()
 			f = open(path+"/lichtwerte.db", "wb")
 			pickle.dump(intens_wanted,f)
@@ -177,7 +180,7 @@ def setled(arg_array, zuordnung_tlc): # 0 = Lichtprogramm, 1 = Dauer
 			intens_now = intens_wanted
 		
 	except KeyboardInterrupt:
-		print(time.strftime("[%Y-%m-%d %H:%M]"), "[LEDS] Programm unterbrochen")
+		log.warn("Programm unterbrochen")
 		quit()
 
 

@@ -3,14 +3,17 @@
 import smbus
 import time
 import os
+import logging
 
+log = logging.getLogger("daemon")
+errlog = logging.getLogger("error")
 #PH Wert: 0x00
 
 #I2C-Adresse 
 address = 0x48
 
 #INIT
-print(time.strftime("[%Y-%m-%d %H:%M]"), "[ PH ] Initiere I2C-Verbindung...")
+log.info("Initiere I2C-Verbindung...")
 ph = smbus.SMBus(1)
 
 #Berechnung
@@ -42,11 +45,11 @@ def read(PH4, PH7, volts = 0):
 	voltage_avg = sum(voltage) / len(voltage)
 
 	if volts == 1: 
-		print(time.strftime("[%Y-%m-%d %H:%M]"),"[ PH ]", voltage_avg)
+		log.info(voltage_avg)
 		return voltage_avg
 
 	phwert = round(calc_ph(voltage_avg, PH4, PH7),2)
-	print(time.strftime("[%Y-%m-%d %H:%M]"), "[ PH ] Gemessener PH-Wert:", phwert)
+	log.info("Gemessener PH-Wert: {}".format(phwert))
 	return phwert
 
 if __name__ == "__main__":

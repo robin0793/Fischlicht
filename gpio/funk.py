@@ -1,6 +1,10 @@
 import os
 import time
 import RPi.GPIO as GPIO
+import logging
+
+log = logging.getLogger("daemon")
+errlog = logging.getLogger("error")
 
 GPIO.setwarnings(False)
 
@@ -65,7 +69,7 @@ class RemoteSwitch(object):
 
 def send(pin, code, status):
 
-	print(time.strftime("[%Y-%m-%d %H:%M]"), "[FUNK]", device, " ", status)
+	log.info("Switch {}: {}".format(pin, status))
 	remote = RemoteSwitch(pin, code, pin)
 	if status == 1:
 		remote.switchOn()
