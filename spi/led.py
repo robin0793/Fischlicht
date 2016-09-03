@@ -87,7 +87,7 @@ def setled(arg_array, zuordnung_tlc): # 0 = Lichtprogramm, 1 = Dauer
 		
 		if arg_array[1] in zuordnung:
 			intens_set=zuordnung[arg_array[1]]
-			log.info("Starte Lichtprogramm:", arg_array[1])
+			log.info("Starte Lichtprogramm: {}".format(arg_array[1]))
 		else:
 			intens_set=lp.aus
 			
