@@ -25,6 +25,14 @@ if len(sys.argv)>1:
 
 	if sys.argv[1]=="ledm":
 		print ("Coming soon... ;)")
+	elif sys.argv[1]=="log":
+		linenr = int(sys.argv[2]) if len(sys.argv)>2 else 10			
+		print("/var/log/Fischlicht/daemon.log")
+		os.system("tail -n{{}} /var/log/Fischlicht/daemon.log".format(linenr))
+	elif sys.argv[1]=="errlog":
+		linenr = int(sys.argv[2]) if len(sys.argv)>2 else 10			
+		print("/var/log/Fischlicht/error.log")
+		os.system("tail -n{{}} /var/log/Fischlicht/error.log".format(linenr))
 	elif sys.argv[1]=="daemon":
 		if not os.geteuid() == 0:
 			print("Run as root!")
@@ -38,9 +46,11 @@ else:
 Usage: aq <command> [<args>]
 
 Commands:
-  led  [lichtprogramm] [dauer]  Aendern des Lichtprogrammes
-  nt   [0|1]                    Netzteil schalten
-  fan  [0-100]                  Lüfterdrehzahl setzen [%]
+  led     [lichtprogramm] [dauer]  Aendern des Lichtprogrammes
+  nt      [0|1]                    Netzteil schalten
+  fan     [0-100]                  Lüfterdrehzahl setzen [%]
+  log     <[# of lines]>           Letzte Ausgabe des Daemons
+  errlog  <[# of lines]>           Error Log
 \"\"\")
 """.format(path=path)
 
