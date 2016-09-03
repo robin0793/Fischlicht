@@ -1,36 +1,40 @@
 #!/usr/bin/python3
+try:
+	import smbus
+	import time
+	import os
+	import logging
 
-import smbus
-import time
-import os
-import logging
+	log = logging.getLogger("daemon")
+	errlog = logging.getLogger("error")
+	#PH Wert: 0x00
 
-log = logging.getLogger("daemon")
-errlog = logging.getLogger("error")
-#PH Wert: 0x00
+	#I2C-Adresse 
+	address = 0x48
 
-#I2C-Adresse 
-address = 0x48
+	#INIT
+	log.info("Initiere I2C-Verbindung...")
+	ph = smbus.SMBus(1)
 
-#INIT
-log.info("Initiere I2C-Verbindung...")
-ph = smbus.SMBus(1)
+	#Berechnung
+	def calc_ph(value,pH4,pH7):
+		try:
+			m = (7.00 - 4.00) / (pH7 - pH4)
+			n = 7.00 - m * pH7
+			
+			pH = m * value + n
+			
+			return(pH)
+		except:
+			return(0)
+			
+	#Calibration Values
+	PH4 = 2265
+	PH7 = 2052
+except Exception as E:
+	log.warn("Fehler beim Herstellen der i2c-Verbindung. \'smbus\'-Modul installiert?")
 
-#Berechnung
-def calc_ph(value,pH4,pH7):
-	try:
-		m = (7.00 - 4.00) / (pH7 - pH4)
-		n = 7.00 - m * pH7
-		
-		pH = m * value + n
-		
-		return(pH)
-	except:
-		return(0)
-		
-#Calibration Values
-PH4 = 2265
-PH7 = 2052
+
 
 def read(PH4, PH7, volts = 0):
 	voltage = []

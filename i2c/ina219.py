@@ -1,33 +1,36 @@
 #!/usr/bin/python3
+try:
+	import smbus
+	import time
+	import logging
 
-import smbus
-import time
-import logging
+	log = logging.getLogger("daemon")
+	errlog = logging.getLogger("error")
 
-log = logging.getLogger("daemon")
-errlog = logging.getLogger("error")
+	#Shunt Voltage: 0x01
+	#Bus Voltage: 0x02
+	#Power Register:  0x03
+	#Current Register: 0x04
+	#Calibration Register: 0x05
 
-#Shunt Voltage: 0x01
-#Bus Voltage: 0x02
-#Power Register:  0x03
-#Current Register: 0x04
-#Calibration Register: 0x05
+	#I2C-Adresse
+	address = 0x40
 
-#I2C-Adresse
-address = 0x40
+	#INIT
+	log.info("Initiere I2C-Verbindung...")
 
-#INIT
-log.info("Initiere I2C-Verbindung...")
+	ina219 = smbus.SMBus(1)
+	mask = 0b11111111
 
-ina219 = smbus.SMBus(1)
-mask = 0b11111111
+	#Config/Calibration Register
 
-#Config/Calibration Register
-
-ina219.write_i2c_block_data(address,0x00,[0x1F, 0xFF])
-ina219.write_i2c_block_data(address,0x05,[0x14, 0xF8])
-log.info("Konfiguration abgeschlossen")
-
+	ina219.write_i2c_block_data(address,0x00,[0x1F, 0xFF])
+	ina219.write_i2c_block_data(address,0x05,[0x14, 0xF8])
+	log.info("Konfiguration abgeschlossen")
+except Exception as E:
+	log.warn("Fehler beim Herstellen der i2c-Verbindung. \'smbus\'-Modul installiert?")
+	
+	
 def shunt():	#Read Shunt Voltage
 	v_s = ina219.read_i2c_block_data(address,0x01,2)
 	voltage_shunt = (((v_s[0] & mask) << 8) + v_s[1])

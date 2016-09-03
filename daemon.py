@@ -3,13 +3,36 @@
 import sys, time, os
 from _thread import start_new_thread as thread
 from os import path
-import telepot
 import configparser
+import logging
 
 __version__ = "2.0"
 
+#Logging
+def setup_log(name, file, wmode, std):
+	format = logging.Formatter(fmt="[%(asctime)s][%(levelname).4s][%(module)-4.4s] %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
+	handler = logging.FileHandler(file, mode=wmode)
+	handler.setFormatter(format)
+	stream = logging.StreamHandler(std)
+	stream.setFormatter(format)
+	log = logging.getLogger(name)
+
+	log.setLevel(logging.DEBUG)
+	log.addHandler(handler)
+	log.addHandler(stream)
+	return log
+
+log = setup_log("daemon", "/var/log/Fischlicht/daemon.log", "w", sys.stdout)
+errlog = setup_log("error", "/var/log/Fischlicht/daemon.log", "a", sys.stderr)
+
+try:
+	import telepot
+except Exception as e:
+	log.warn("Telepot Modul konnte nicht importiert werden. Telegram Bot nicht verfügbar!")
+
 import i2c.phsensor as ph
 import i2c.ina219 as ina
+
 import database.db as db
 import gpio.temp as temp
 import gpio.funk as funk
@@ -23,11 +46,12 @@ path = path.dirname(path.realpath(__file__))
 
 
 
+
 print()
-print(time.strftime("[%Y-%m-%d %H:%M]"), "[MAIN] Willkommen!")
-print(time.strftime("[%Y-%m-%d %H:%M]"), "[MAIN] Fischlicht", __version__)
+log.info("Willkommen!")
+log.info("Fischlicht {}".format(__version__))
 print()
-print(time.strftime("[%Y-%m-%d %H:%M]"), "[MAIN] Config einlesen")
+log.info("Config einlesen")
 
 config = configparser.ConfigParser()
 config.read("{}/config.ini".format(path))
@@ -37,14 +61,14 @@ led_assign = list(map(int, config["led"]["assign"].split(",")))
 
 
 def alert(nachricht, wert, einheit="", userid=""):
-	print(time.strftime("[%Y-%m-%d %H:%M]"), "[ALRT] {}: {} {}".format(nachricht, wert, einheit))
+	log.warn("{}: {} {}".format(nachricht, wert, einheit))
 	if userid != "": bot.sendMessage(userid, "{}: {} {}".format(nachricht, wert, einheit))
 
 def bot_handle(msg):
-	print(time.strftime("[%Y-%m-%d %H:%M]"), "[TBOT] Nachricht empfangen:", msg)
+	log.info("[TBOT] Nachricht empfangen:", msg)
 
 if int(config["telebot"]["active"]) == 1:	
-	print(time.strftime("[%Y-%m-%d %H:%M]"), "[MAIN] Telegram Bot einrichten")
+	log.info("Telegram Bot einrichten")
 	
 	bot = telepot.Bot(config["telebot"]["bot_id"]) #BOT ID hier einfügen
 	userid = config["telebot"]["user_id"] #User ID hier einfügen
@@ -54,14 +78,14 @@ else: userid = ""
 
 
 def listen(): #Auf Eingaben reagieren indem die Datei "pipe" ausgelesen wird
-	print(time.strftime("[%Y-%m-%d %H:%M]"), "[MAIN] Bereit fuer Eingaben.")
+	log.info("Bereit fuer Eingaben.")
 	open(path + "/pipe", "w").close() # 
 	p = open(path + "/pipe", "r")
 	while True:
 		
 		eingabe = p.read()
 		if eingabe != "": #Eingabe vorhanden
-			print(time.strftime("[%Y-%m-%d %H:%M]"), "[MAIN] Eingabe erkannt:", eingabe)
+			log.info("Eingabe erkannt:", eingabe)
 			try:
 				args = eingabe.split()
 				if args[0] == "led": # led [lichtprogramm] [dauer]
@@ -90,8 +114,8 @@ def listen(): #Auf Eingaben reagieren indem die Datei "pipe" ausgelesen wird
 				elif args[0] == "cleardb": #alte DB Eintraege löschen (>7Tage)
 					db.delete_old()
 			except Exception as e :
-				print(time.strftime("[%Y-%m-%d %H:%M]"), "[MAIN] Ungültige Eingabe?")
-				print(time.strftime("[%Y-%m-%d %H:%M]"), "[MAIN][ERROR]" , e)	
+				log.info("Ungültige Eingabe?")
+				errlog.error(e)	
 				
 			p.close()
 			open(path + "/pipe", "w").close()
@@ -105,7 +129,7 @@ thread(listen,()) #Thread starten
 
 try:
 #LOOP
-	print(time.strftime("[%Y-%m-%d %H:%M]"), "[MAIN] Starte Daemon.")
+	log.info("Starte Daemon.")
 	if int(config["ph"]["active"]) == 1: phwert = db.read_last("ph")
 	
 	if config["power"]["mode"] == "gpio":
@@ -222,5 +246,6 @@ try:
 		time.sleep(int(config["general"]["interval"]))
 		
 except KeyboardInterrupt:
-	print(time.strftime("[%Y-%m-%d %H:%M]"), "[MAIN] Abbruch durch KeyboardInterrupt")
+	log.info("Abbruch durch KeyboardInterrupt")
 	db.close()
+	logging.shutdown()
