@@ -31,25 +31,25 @@ log.info("Konfiguration abgeschlossen")
 def shunt():	#Read Shunt Voltage
 	v_s = ina219.read_i2c_block_data(address,0x01,2)
 	voltage_shunt = (((v_s[0] & mask) << 8) + v_s[1])
-	log.info("Shunt Spannung:", voltage_shunt/100, "mV")
+	log.info("Shunt Spannung: {} mV".format(voltage_shunt/100))
 	return voltage_shunt/100 #mV
 
 def bus():
 	v_b = ina219.read_i2c_block_data(address,0x02,2)
 	voltage_bus = (((v_b[0] & mask) << 8) + v_b[1])
-	log.info("Bus Spannung:", round(voltage_bus/2000, 2), "V")
+	log.info("Bus Spannung: {} V".format(round(voltage_bus/2000, 2)))
 	return round(voltage_bus/2000, 2) #V
 
 def power():
 	po = ina219.read_i2c_block_data(address,0x03,2)
 	power = (((po[0] & mask) << 8) + po[1])
-	log.info("Leistungsaufnahme:", power/50, "W")
+	log.info("Leistungsaufnahme: {} W".format(power/50))
 	return power/50 #W
 	
 def current():
 	cu = ina219.read_i2c_block_data(address,0x04,2)
 	current = (((cu[0] & mask) << 8) + cu[1])
-	log.info("[ELEC] Stromaufnahme:", current/1000, "A")
+	log.info("Stromaufnahme: {} A".format(current/1000))
 	return current/1000 #A
 
 if __name__ == "__main__":
