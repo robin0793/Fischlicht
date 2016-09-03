@@ -40,6 +40,10 @@ if len(sys.argv)>1:
 		os.system("systemctl restart fischlicht")
 	else:
 		os.system("echo {{}} > {path}/pipe".format(allarguments))
+		if sys.argv[1]=="led": 
+			os.system("grep \\\"\[led \]\\\" /var/log/Fischlicht/daemon.log | tail -n5")
+		else:
+			os.system("tail -n1 /var/log/Fischlicht/daemon.log")
 else:
 	print(\"\"\"~~~ FISCHLICHT ~~~
 
