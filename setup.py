@@ -100,7 +100,7 @@ except Exception as e:
 	
 if os.path.isfile("{}/config.ini".format(path)) == False:
 	try:
-		print ("Erstelle config ...")
+		print ("Erstelle config...")
 		configini="""# Fischlicht Config File #
 
 # BCM Pinbezeichnung
@@ -178,6 +178,109 @@ user_id =
 
 	except Exception as e:
 		print ("Fehlgeschlagen.\n " + str(e))
+		
+if os.path.isfile("{}/spi/lichtprogramme.py".format(path)) == False:
+	try:
+		print ("Erstelle Lichtprogramm Config (/spi/lichtprogramme.py)...")
+		configlp="""#Lichtprogramme
+# !ZUORDUNG AM ENDE BEACHTEN!
+
+off=0
+on=4095
+
+#Beispiele:
+#Normale Beleuchtung
+rt	=	4095
+gr	=	1900
+bl	=	1700
+normal = 	   [rt,		 gr,	 bl,	#Lampe 1: 1. Reihe, rechts
+				rt,		 gr,	 bl,	#Lampe 2: 1. Reihe, links
+				rt,		 gr,	 bl,	#Lampe 3: 2. Reihe, rechts
+				rt,		 gr,	 bl,	#Lampe 4: 2. Reihe, mittig
+				rt,		 gr,	 bl,	#Lampe 5: 2. Reihe, links
+				rt,		 gr,	 bl,	#Lampe 6: 3. Reihe
+				rt,		 gr,	 bl]	#Lampe 7: 4. Reihe
+							
+				
+#Mondlicht
+mondlicht =	   [10,	 	10,	 	80,		#Lampe 1: 1. Reihe, rechts
+				10,	 	10,	 	80,		#Lampe 2: 1. Reihe, links
+				20,	 	20,	 	200,	#Lampe 3: 2. Reihe, rechts
+				20,	 	20,	 	200,	#Lampe 4: 2. Reihe, mittig
+				20,		20,	 	200,	#Lampe 5: 2. Reihe, links
+				60,		30,	 	600,	#Lampe 6: 3. Reihe
+				60,	 	30,	 	500]	#Lampe 7: 4. Reihe
+
+					
+#Mondlicht - Verlauf	
+mondschein =  [[10,	 	10,	 	80,		#Lampe 1: 1. Reihe, rechts
+				10,	 	10,	 	80,		#Lampe 2: 1. Reihe, links
+				20,	 	20,		200,	#Lampe 3: 2. Reihe, rechts
+				20,	 	20,	 	200,	#Lampe 4: 2. Reihe, mittig
+				120,	60,	 	200,	#Lampe 5: 2. Reihe, links
+				60,	 	30,	 	600,	#Lampe 6: 3. Reihe
+				60,	 	30,	 	500],	#Lampe 7: 4. Reihe
+
+			   [10,	 	10,	 	80,		#Lampe 1: 1. Reihe, rechts
+				10,	 	10,	 	80,		#Lampe 2: 1. Reihe, links
+				20,	 	20,	 	200,	#Lampe 3: 2. Reihe, rechts
+				20,	 	20,	 	200,	#Lampe 4: 2. Reihe, mittig
+				20,	 	20,	 	200,	#Lampe 5: 2. Reihe, links
+				60,	 	30,	 	600,	#Lampe 6: 3. Reihe
+				340,	240,	500],	#Lampe 7: 4. Reihe
+				
+			   [10,	 	10,	 	80,		#Lampe 1: 1. Reihe, rechts
+				10,	 	10,		80,		#Lampe 2: 1. Reihe, links
+				120,	60,	 	200,	#Lampe 3: 2. Reihe, rechts
+				20,	 	20,	 	200,	#Lampe 4: 2. Reihe, mittig
+				20,	 	20,	 	200,	#Lampe 5: 2. Reihe, links
+				60,	 	30,	 	600,	#Lampe 6: 3. Reihe
+				60,	 	30,	 	500]]	#Lampe 7: 4. Reihe
+						
+#Wolkig - Verlauf
+# -1 = Wert des urspruenglichen Lichtprogrammes	
+
+wolkig =	  [[0,	 	 0,	 	 0,		#Lampe 1: 1. Reihe, rechts
+				-1,	 	-1,		-1,		#Lampe 2: 1. Reihe, links
+				0,	 	 0,		 0,		#Lampe 3: 2. Reihe, rechts
+				-1,	 	-1,	 	-1,		#Lampe 4: 2. Reihe, mittig
+				-1,	 	-1,	 	-1,		#Lampe 5: 2. Reihe, links
+				-1,	 	-1,	 	-1,		#Lampe 6: 3. Reihe
+				-1,	 	-1,	 	-1],	#Lampe 7: 4. Reihe
+
+			   [ 0,	 	 0,		 0,		#Lampe 1: 1. Reihe, rechts
+				-1,	 	-1,	 	-1,		#Lampe 2: 1. Reihe, links
+				-1,	 	-1,	 	-1,		#Lampe 3: 2. Reihe, rechts
+				0,	 	 0,		 0,		#Lampe 4: 2. Reihe, mittig
+				0,	 	 0,		 0,		#Lampe 5: 2. Reihe, links
+				-1,	 	-1,		-1,		#Lampe 6: 3. Reihe
+				-1,	 	-1,	 	-1],	#Lampe 7: 4. Reihe
+						
+#...
+				
+			   [-1,	 	-1,		-1,		#Lampe 1: 1. Reihe, rechts
+				-1,	 	-1,	 	-1,		#Lampe 2: 1. Reihe, links
+				-1,	 	-1,	 	-1,		#Lampe 3: 2. Reihe, rechts
+				-1,	 	-1,	 	-1,		#Lampe 4: 2. Reihe, mittig
+				-1,	 	-1,	 	-1,		#Lampe 5: 2. Reihe, links
+				-1,	 	-1,	 	-1,		#Lampe 6: 3. Reihe
+				-1,	 	-1,	 	-1]]	#Lampe 7: 4. Reihe
+				
+#"Name zum Aufrufen" : Zugehöriges Array
+zuordnung =		 {	"normal"		:	normal			,
+				"mondlicht"			:	mondlicht		,
+				"mondschein"		:	mondschein		,
+				"wolkig"			:	wolkig			}
+"""
+
+		f = open("{}/spi/Lichtprogramme.py".format(path),"w") 
+		f.write(str(configlp))
+		f.close()
+		print ("Erfolgreich!\n")
+
+	except Exception as e:
+		print ("Fehlgeschlagen.\n " + str(e))		
+
 
 try: 
 	print ("Lege Logfiles an...")
@@ -192,5 +295,4 @@ try:
 except Exception as e:
 	print ("Fehlgeschlagen.\n " + str(e))
 		
-print()
 print ("Setup abgeschlossen")
