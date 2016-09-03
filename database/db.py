@@ -85,7 +85,7 @@ WHERE name="{setting}"; """.format(datatype=datatype,value=value,setting=setting
 	try:
 		db_cursor.execute(command_set)
 		db_connection.commit()
-		log.info("Wert in Datenbank geschrieben: ", setting, ": ", value)
+		log.info("Wert in Datenbank geschrieben: {}: {}".format(setting, value))
 	except Exception as e :
 		
 		errlog.error(e)
