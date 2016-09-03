@@ -273,7 +273,7 @@ zuordnung =		 {	"normal"		:	normal			,
 				"wolkig"			:	wolkig			}
 """
 
-		f = open("{}/spi/Lichtprogramme.py".format(path),"w") 
+		f = open("{}/spi/lichtprogramme.py".format(path),"w") 
 		f.write(str(configlp))
 		f.close()
 		print ("Erfolgreich!\n")
