@@ -65,7 +65,7 @@ def alert(nachricht, wert, einheit="", userid=""):
 	if userid != "": bot.sendMessage(userid, "{}: {} {}".format(nachricht, wert, einheit))
 
 def bot_handle(msg):
-	log.info("[TBOT] Nachricht empfangen:", msg)
+	log.info("[TBOT] Nachricht empfangen: {}".format(msg))
 
 if int(config["telebot"]["active"]) == 1:	
 	log.info("Telegram Bot einrichten")
@@ -110,7 +110,12 @@ def listen(): #Auf Eingaben reagieren indem die Datei "pipe" ausgelesen wird
 						funk.send(int(config["power"]["pin"]), outlet_code, 1)
 						
 					db.write_setting("netzteil", args[1])
-					
+				elif args[0] == "phcal":
+					if len(args)>2:
+						if float(args[1]) != 0: db.write_setting("ph7", float(args[1]))
+						if float(args[2]) != 0: db.write_setting("ph4", float(args[2]))
+					else: 
+						log.warn("phcal: Zu wenig Argumente")
 				elif args[0] == "cleardb": #alte DB Eintraege löschen (>7Tage)
 					db.delete_old()
 			except Exception as e :
@@ -197,7 +202,7 @@ try:
 							alert("Temperatur {} kritisch niedrig".format(sensor_array[0]), temp_array[g][0], "°C", userid)
 							temp_array[g][2] = 1
 					#low_warning		
-					elif len(sensor_array) > 1 and temp_array[g][0] < float(sensor_array[1]) and temp_array[g][1] == 0: 
+					elif len(sensor_array) > 1 and temp_array[g][0] < float(sensor_array[1]) and temp_array[g][1] == 0 and sensor_array[0] != "case": 
 						alert("Temperatur {} zu niedrig".format(sensor_array[0]), temp_array[g][0], "°C", userid)
 						temp_array[g][1] = 1
 					if temp_array[g][0] > float(sensor_array[1]) and sensor_array[0] == "case":

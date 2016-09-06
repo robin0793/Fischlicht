@@ -38,6 +38,8 @@ if len(sys.argv)>1:
 			print("Run as root!")
 			exit()
 		os.system("systemctl restart fischlicht")
+	elif sys.argv[1]=="phcal":
+		os.system("{path}/i2c/phsensor.py calibrate {path}/pipe")
 	else:
 		os.system("echo {{}} > {path}/pipe".format(allarguments))
 		if sys.argv[1]=="led": 
@@ -53,6 +55,7 @@ Commands:
   led     [lichtprogramm] [dauer]  Aendern des Lichtprogrammes
   nt      [0|1]                    Netzteil schalten
   fan     [0-100]                  Lüfterdrehzahl setzen [%]
+  phcal                            PH-Elektrode kalibrieren
   log     <[# of lines]>           Letzte Ausgabe des Daemons
   errlog  <[# of lines]>           Error Log
 \"\"\")
