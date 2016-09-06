@@ -1,4 +1,8 @@
 import time
+import logging
+
+log = logging.getLogger("daemon")
+errlog = logging.getLogger("error")
 
 def read(deviceid, name):
 
@@ -19,9 +23,9 @@ def read(deviceid, name):
 	if status=="YES":
 		tempstr= lines[1][-6:-1]
 		tempvalue=float(tempstr)/1000
-		print(time.strftime("[%Y-%m-%d %H:%M]"), "[TEMP]", name, ":", round(tempvalue,1))
+		log.info("{}: {}°C".format(name.upper(),round(tempvalue,1)))
 		return round(tempvalue,1)
 	else:
-		print(time.strftime("[%Y-%m-%d %H:%M]"), "[TEMP] Fehler beim Lesen des Sensors:", name)
+		log.info("Fehler beim Lesen des Sensors:", name)
 		error = 1
 		return 0
