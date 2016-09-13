@@ -77,8 +77,6 @@ def send(pin, code, status):
 		remote.switchOff()
 
 
-							
-              
 				
 
 
