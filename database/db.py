@@ -70,12 +70,23 @@ def add_write(arr, name, value):
 
 	return (arr)
 	
-def write_setting(setting, value):
+def write_setting(setting, value, arrays = 0):
 
-	if type(value) == str:
-		datatype = "text" 
-	else: 
+	if arrays == 1:
 		datatype = "value"
+		arr = value
+		value = ""
+		for n in range (0, len(arr)):
+			if n == 0:
+				value = int(round(arr[0]))
+			else:
+				value = "{};{}".format(value, int(round(arr[n])))
+	else:			
+		if type(value) == str:
+			datatype = "text" 
+
+		else: 
+			datatype = "value"
 		
 	command_set = """
 UPDATE settings

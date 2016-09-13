@@ -59,6 +59,11 @@ config.read("{}/config.ini".format(path))
 outlet_code = list(map(int, config["outlet"]["code"].split(",")))
 led_assign = list(map(int, config["led"]["assign"].split(",")))
 
+led_intens = list(map(float, db.read_setting("lichtprogramm").split(";")))
+led_aktiv = db.read_setting("lichtprogramm", "text")
+
+licht = led.led(zuordnung=led_assign, intens = led_intens, aktiv = led_aktiv)
+
 
 def alert(nachricht, wert, einheit="", userid=""):
 	log.warn("{}: {} {}".format(nachricht, wert, einheit))
@@ -85,12 +90,11 @@ def listen(): #Auf Eingaben reagieren indem die Datei "pipe" ausgelesen wird
 		
 		eingabe = p.read()
 		if eingabe != "": #Eingabe vorhanden
-			log.info("Eingabe erkannt:", eingabe)
+			log.info("Eingabe erkannt: {}".format(eingabe))
 			try:
 				args = eingabe.split()
 				if args[0] == "led": # led [lichtprogramm] [dauer]
-					thread(led.setled,(args, led_assign,)) #Neuer Thread zum Aendern des Lichts
-					db.write_setting("lichtprogramm", args[1]) #Lichtprogramm in Datenbank schreiben
+					thread(licht.setled,(args, )) #Neuer Thread zum Aendern des Lichts
 					
 				elif args[0] == "fan":
 					if len(args) < 2: 
@@ -144,7 +148,7 @@ try:
 	
 
 	
-	thread(led.setled,(["led", db.read_setting("lichtprogramm", "text"), 1], led_assign,))
+	thread(licht.setled,(["led", licht.aktiv, 1, 1], ))
 	
 	fanstatus = 0
 	sent = 0
@@ -252,5 +256,14 @@ try:
 		
 except KeyboardInterrupt:
 	log.info("Abbruch durch KeyboardInterrupt")
+	db.write_setting("lichtprogramm", licht.intens, 1)
+	db.write_setting("lichtprogramm", licht.aktiv)
+	db.close()
+	logging.shutdown()
+		
+except Exception as e:
+	log.info("Abbruch: {}".format(e))
+	db.write_setting("lichtprogramm", licht.intens, 1)
+	db.write_setting("lichtprogramm", licht.aktiv)
 	db.close()
 	logging.shutdown()
