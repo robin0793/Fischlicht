@@ -15,6 +15,7 @@ try:
 
 import sys
 import os
+from time import sleep
 
 if len(sys.argv)>1:
 	
@@ -28,10 +29,12 @@ if len(sys.argv)>1:
 	elif sys.argv[1]=="log":
 		linenr = int(sys.argv[2]) if len(sys.argv)>2 else 10			
 		print("/var/log/Fischlicht/daemon.log")
+		sleep(1)
 		os.system("tail -n{{}} /var/log/Fischlicht/daemon.log".format(linenr))
 	elif sys.argv[1]=="errlog":
 		linenr = int(sys.argv[2]) if len(sys.argv)>2 else 10			
 		print("/var/log/Fischlicht/error.log")
+		sleep(1)
 		os.system("tail -n{{}} /var/log/Fischlicht/error.log".format(linenr))
 	elif sys.argv[1]=="daemon":
 		if not os.geteuid() == 0:
@@ -43,11 +46,18 @@ if len(sys.argv)>1:
 	else:
 		os.system("echo {{}} > {path}/pipe".format(allarguments))
 		if sys.argv[1]=="led": 
+			sleep(2)
 			os.system("grep \\\"\[led \]\\\" /var/log/Fischlicht/daemon.log | tail -n5")
 		else:
+			sleep(1)
 			os.system("tail -n1 /var/log/Fischlicht/daemon.log")
 else:
-	print(\"\"\"~~~ FISCHLICHT ~~~
+	print(\"\"\"\
+                            o   __//_
+ ┌─┐┬┌─┐┌─┐┬ ┬┬  ┬┌─┐┬ ┬┌┬┐  ° / o   \/|
+ ├┤ │└─┐│  ├─┤│  ││  ├─┤ │     >   C==||
+ └  ┴└─┘└─┘┴ ┴┴─┘┴└─┘┴ ┴ ┴     \\_____/\\|
+                                  \\\\\\\\\\\\
 
 Usage: aq <command> [<args>]
 
@@ -56,6 +66,7 @@ Commands:
   nt      [0|1]                    Netzteil schalten
   fan     [0-100]                  Lüfterdrehzahl setzen [%]
   phcal                            PH-Elektrode kalibrieren
+  cleardb                          Alte Datenbankeintraege loeschen (>7 Tage)
   log     <[# of lines]>           Letzte Ausgabe des Daemons
   errlog  <[# of lines]>           Error Log
 \"\"\")
