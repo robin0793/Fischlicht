@@ -90,10 +90,15 @@ class led():
 					self.aktiv = arg_array[1]
 				except NameError:
 					log.warn("Lichtprogramm \"{}\" nicht vorhanden".format(arg_array[1]))
+					self.running = 0
 					return 0
 				except:
-					log.warn("Fehlerhafte Eingabe Lichtprogramm")
-					return 0
+					try: 
+						intens_set = array(list(map(float, arg_array[1].split(","))))
+					except:
+						log.warn("Fehlerhafte Eingabe Lichtprogramm")
+						self.running = 0
+						return 0
 				
 		#ANPASSUNG FÜR VERLÄUFE
 
@@ -126,6 +131,7 @@ class led():
 				if array_equal (intens_wanted, self.intens) == True:
 					log.info("Aktuelles Programm neu setzen")
 					self.transfer(intens_wanted)
+					self.running = 0
 					return 1
 					
 			#BERECHNUNG INTERVALLE

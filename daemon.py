@@ -256,14 +256,17 @@ try:
 		
 except KeyboardInterrupt:
 	log.info("Abbruch durch KeyboardInterrupt")
-	db.write_setting("lichtprogramm", licht.intens, 1)
-	db.write_setting("lichtprogramm", licht.aktiv)
-	db.close()
-	logging.shutdown()
+
 		
 except Exception as e:
 	log.info("Abbruch: {}".format(e))
+
+finally:
+	log.info("Fischlicht wird beendet")
 	db.write_setting("lichtprogramm", licht.intens, 1)
 	db.write_setting("lichtprogramm", licht.aktiv)
 	db.close()
 	logging.shutdown()
+
+
+	
