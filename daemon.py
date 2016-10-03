@@ -66,8 +66,11 @@ licht = led.led(zuordnung=led_assign, intens = led_intens, aktiv = led_aktiv)
 
 
 def alert(nachricht, wert, einheit="", userid=""):
-	log.warn("{}: {} {}".format(nachricht, wert, einheit))
-	if userid != "": bot.sendMessage(userid, "{}: {} {}".format(nachricht, wert, einheit))
+	try:
+		log.warn("{}: {} {}".format(nachricht, wert, einheit))
+		if userid != "": bot.sendMessage(userid, "{}: {} {}".format(nachricht, wert, einheit))
+	except:
+		log.error("Telegram Bot: Fehler beim senden")
 
 def bot_handle(msg):
 	log.info("[TBOT] Nachricht empfangen: {}".format(msg))

@@ -26,6 +26,6 @@ def read(deviceid, name):
 		log.info("{}: {}°C".format(name.upper(),round(tempvalue,1)))
 		return round(tempvalue,1)
 	else:
-		log.info("Fehler beim Lesen des Sensors:", name)
+		log.info("Fehler beim Lesen des Sensors: {}".format(name))
 		error = 1
 		return 0
