@@ -5,9 +5,9 @@
 import RPi.GPIO as GPIO
 import time
 from datetime import datetime
-import pickle 
+import pickle
+import numpy as np
 from os import path
-from numpy import array, array_equal, subtract, absolute, amax, dtype
 import logging
 
 if __name__ == "__main__":
@@ -40,7 +40,7 @@ class led():
 		self.period = period
 		self.running = 0
 		
-		self.intens = array(intens)
+		self.intens = np.array(intens)
 		
 	def transfer(self, intens):
 		GPIO.output(self.latch, GPIO.LOW)   #Latch low
@@ -94,7 +94,7 @@ class led():
 					return 0
 				except:
 					try: 
-						intens_set = array(list(map(float, arg_array[1].split(","))))
+						intens_set = np.array(list(map(float, arg_array[1].split(","))))
 					except:
 						log.warn("Fehlerhafte Eingabe Lichtprogramm")
 						self.running = 0
@@ -122,13 +122,13 @@ class led():
 				for j in range(0,len(intens)):
 					intens_wanted[self.zuordnung[j]] = intens[j] #zuordnung_tlc[j] ist die Stelle, an die der Wert im neuen Array liegen soll	
 					
-				intens_wanted = self.dynamic(array(intens_wanted),intens_orig)
+				intens_wanted = self.dynamic(np.array(intens_wanted),intens_orig)
 				
 				
 				while len(intens_wanted) > len(self.intens):
-					self.intens.append(0)
+					self.intens = append(self.intens, 0)
 				
-				if array_equal (intens_wanted, self.intens) == True:
+				if np.array_equal (intens_wanted, self.intens) == True:
 					log.info("Aktuelles Programm neu setzen")
 					self.transfer(intens_wanted)
 					self.running = 0
@@ -147,10 +147,10 @@ class led():
 				maxstep = self.maxstep # Maximale Differenz der Farbwerte zwischen zwei schritten
 				
 				if type(intens_wanted[0])==list:
-					intens_maxdiff = int(amax(absolute(subtract(intens_wanted[0], self.intens)))) # Maximum des Differenzbetrags
+					intens_maxdiff = int(np.amax(np.absolute(np.subtract(intens_wanted[0], self.intens)))) # Maximum des Differenzbetrags
 					period = dauer * maxstep / (intens_maxdiff * (len(intens_wanted)))
 				else:
-					intens_maxdiff = int(amax(absolute(subtract(intens_wanted, self.intens)))) # Maximum des Differenzbetrags
+					intens_maxdiff = int(np.amax(np.absolute(np.subtract(intens_wanted, self.intens)))) # Maximum des Differenzbetrags
 					period = dauer * maxstep / intens_maxdiff #Periodendauer d.h. Zeit zwischen den Schritten
 				
 				if period < self.period:		#Minimale Periodendauer ist 200 ms, da Übertragung bis zu 150 ms dauert ( + Sicherheit)
