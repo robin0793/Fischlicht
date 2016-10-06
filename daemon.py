@@ -5,8 +5,10 @@ from _thread import start_new_thread as thread
 from os import path
 import configparser
 import logging
+import traceback
 
-__version__ = "2.0"
+
+__version__ = "2.1"
 
 #Logging
 def setup_log(name, file, wmode, std):
@@ -23,7 +25,7 @@ def setup_log(name, file, wmode, std):
 	return log
 
 log = setup_log("daemon", "/var/log/Fischlicht/daemon.log", "w", sys.stdout)
-errlog = setup_log("error", "/var/log/Fischlicht/daemon.log", "a", sys.stderr)
+errlog = setup_log("error", "/var/log/Fischlicht/error.log", "a", sys.stderr)
 
 try:
 	import telepot
@@ -37,6 +39,7 @@ import database.db as db
 import gpio.temp as temp
 import gpio.funk as funk
 import gpio.luefter as fan
+import gpio.flow as flow
 import gpio.netzteil as nt
 import spi.led as led
 
@@ -44,7 +47,14 @@ import spi.led as led
 
 path = path.dirname(path.realpath(__file__))
 
-
+#Exit Funktion
+def exiting():
+	log.info("Fischlicht wird beendet")
+	db.write_setting("lichtprogramm", licht.intens, 1)
+	db.write_setting("lichtprogramm", licht.aktiv)
+	db.close()
+	logging.shutdown()
+	quit()
 
 
 print()
@@ -63,7 +73,8 @@ led_intens = list(map(float, db.read_setting("lichtprogramm").split(";")))
 led_aktiv = db.read_setting("lichtprogramm", "text")
 
 licht = led.led(zuordnung=led_assign, intens = led_intens, aktiv = led_aktiv)
-
+if "flow" in config and int(config["flow"]["active"]) == 1: 
+	flow = flow.flow(pin = int(config["flow"]["pin"]))
 
 def alert(nachricht, wert, einheit="", userid=""):
 	try:
@@ -125,6 +136,8 @@ def listen(): #Auf Eingaben reagieren indem die Datei "pipe" ausgelesen wird
 						log.warn("phcal: Zu wenig Argumente")
 				elif args[0] == "cleardb": #alte DB Eintraege löschen (>7Tage)
 					db.delete_old()
+				elif args[0] == "stop": 
+					exiting()
 			except Exception as e :
 				log.info("Ungültige Eingabe?")
 				errlog.error(e)	
@@ -246,7 +259,12 @@ try:
 			
 			db_array = db.add_write(db_array, "volt", volt)
 			db_array = db.add_write(db_array, "current", current)
-			
+	
+	#FLOW
+		if "flow" in config and int(config["flow"]["active"]) == 1:
+			flow.read(stime=5)
+			db_array = db.add_write(db_array, "flow", flow.flowrate)
+		
 		#f= open(path + "/phvolt.csv","a")
 		#f.write("{};{}\n".format(str(phwert).replace(".",","),str(volt).replace(".",",")))
 		#f.close()		
@@ -262,14 +280,10 @@ except KeyboardInterrupt:
 
 		
 except Exception as e:
-	log.info("Abbruch: {}".format(e))
+	errlog.error("Abbruch: {}".format(e))
+	errlog.error(traceback.format_exc())
 
-finally:
-	log.info("Fischlicht wird beendet")
-	db.write_setting("lichtprogramm", licht.intens, 1)
-	db.write_setting("lichtprogramm", licht.aktiv)
-	db.close()
-	logging.shutdown()
+
 
 
 	

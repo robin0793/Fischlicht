@@ -26,23 +26,29 @@ if len(sys.argv)>1:
 
 	if sys.argv[1]=="ledm":
 		print ("Coming soon... ;)")
+		
 	elif sys.argv[1]=="log":
 		linenr = int(sys.argv[2]) if len(sys.argv)>2 else 10			
 		print("/var/log/Fischlicht/daemon.log")
 		sleep(1)
 		os.system("tail -n{{}} /var/log/Fischlicht/daemon.log".format(linenr))
+		
 	elif sys.argv[1]=="errlog":
 		linenr = int(sys.argv[2]) if len(sys.argv)>2 else 10			
 		print("/var/log/Fischlicht/error.log")
 		sleep(1)
 		os.system("tail -n{{}} /var/log/Fischlicht/error.log".format(linenr))
+		
 	elif sys.argv[1]=="daemon":
 		if not os.geteuid() == 0:
 			print("Run as root!")
 			exit()
 		os.system("systemctl restart fischlicht")
+		
 	elif sys.argv[1]=="phcal":
 		os.system("{path}/i2c/phsensor.py calibrate {path}/pipe")
+
+		
 	else:
 		os.system("echo {{}} > {path}/pipe".format(allarguments))
 		if sys.argv[1]=="led": 
@@ -67,8 +73,11 @@ Commands:
   fan     [0-100]                  Lüfterdrehzahl setzen [%]
   phcal                            PH-Elektrode kalibrieren
   cleardb                          Alte Datenbankeintraege loeschen (>7 Tage)
+  
   log     <[# of lines]>           Letzte Ausgabe des Daemons
   errlog  <[# of lines]>           Error Log
+  
+  stop                             Daemon beenden
 \"\"\")
 """.format(path=path)
 
@@ -92,6 +101,7 @@ After=multi-user.target
 [Service]
 Type=simple
 ExecStart={path}/daemon.py
+ExecStop=/usr/bin/aq stop
 User=pi
 WorkingDirectory={path}
 Restart=on-failure
@@ -165,6 +175,10 @@ pin = 17
 
 [fan]
 pin = 18
+
+[flow]
+active = 0
+pin = 5
 
 [power]
 # modes: gpio, outlet 
