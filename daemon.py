@@ -73,6 +73,13 @@ led_intens = list(map(float, db.read_setting("lichtprogramm").split(";")))
 led_aktiv = db.read_setting("lichtprogramm", "text")
 
 licht = led.led(zuordnung=led_assign, intens = led_intens, aktiv = led_aktiv)
+
+remote_ph = funk.RemoteSwitch(int(config["ph"]["outlet"]), outlet_code, int(config["outlet"]["pin"]))
+
+if config["power"]["mode"] == "outlet":
+	remote_nt = funk.RemoteSwitch(int(config["power"]["pin"]), outlet_code, int(config["outlet"]["pin"]))
+
+
 if "flow" in config and int(config["flow"]["active"]) == 1: 
 	flow = flow.flow(pin = int(config["flow"]["pin"]))
 
@@ -125,7 +132,7 @@ def listen(): #Auf Eingaben reagieren indem die Datei "pipe" ausgelesen wird
 					if config["power"]["mode"] == "gpio":
 						nt.setnt(args, int(config["power"]["pin"]))
 					elif config["power"]["mode"] == "outlet":
-						funk.send(int(config["power"]["pin"]), outlet_code, 1)
+						remote_nt.switchOn()
 						
 					db.write_setting("netzteil", args[1])
 				elif args[0] == "phcal":
@@ -155,12 +162,14 @@ thread(listen,()) #Thread starten
 try:
 #LOOP
 	log.info("Starte Daemon.")
-	if int(config["ph"]["active"]) == 1: phwert = db.read_last("ph")
+	if int(config["ph"]["active"]) == 1: 
+		if db.read_setting("co2") == None: db.write_setting("co2", 0)
+		phwert = db.read_last("ph")
 	
 	if config["power"]["mode"] == "gpio":
 		nt.setnt(["nt", db.read_setting("netzteil")], int(config["power"]["pin"]))
 	elif config["power"]["mode"] == "outlet":
-		funk.send(int(config["power"]["pin"]), outlet_code, db.read_setting("netzteil"))
+		remote_nt.switch(int(db.read_setting("netzteil")))
 	
 
 	
@@ -175,6 +184,7 @@ try:
 		
 	#PHWERT
 		if int(config["ph"]["active"]) == 1:
+			
 			ph4 = db.read_setting("ph4")
 			ph7 = db.read_setting("ph7")
 			phstatus = db.read_setting("co2")
@@ -182,17 +192,22 @@ try:
 			phwert = ph.read(ph4,ph7)
 			
 			db_array = db.add_write(db_array, "ph", phwert)
+
 			
 			for n in range(0,5):
 				if abs(phwert - phwert_prev) < 0.2: break
+				phwert = ph.read(ph4,ph7)
+				
+			if abs(phwert - phwert_prev) < 0.2:
+				phwert = phwert_prev
+			
 			if phwert >= float(config["ph"]["ph_value"]) and phstatus == 0:
 				if db.read_setting("netzteil") == 1:
-					funk.send (int (config["ph"]["outlet"]), outlet_code, 1)
+					remote_ph.switchOn()
 					db.write_setting("co2", 1)
-			elif phwert <= float(config["ph"]["ph_value"]) - 0.5 and phstatus == 1:
-				funk.send (int (config["ph"]["outlet"]), outlet_code, 0)
+			elif phwert <= float(config["ph"]["ph_value"]) - 0.05 and phstatus == 1:
+				remote_ph.switchOff()
 				db.write_setting("co2", 0)
-			
 		
 	#TEMP
 		if int(config["temp"]["active"]) == 1:
