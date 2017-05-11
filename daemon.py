@@ -193,6 +193,7 @@ try:
 			
 			db_array = db.add_write(db_array, "ph", phwert)
 
+			if phwert_prev == None: phwert_prev = phwert
 			
 			for n in range(0,5):
 				if abs(phwert - phwert_prev) < 0.2: break
