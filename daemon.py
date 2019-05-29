@@ -69,9 +69,13 @@ config.read("{}/config.ini".format(path))
 outlet_code = list(map(int, config["outlet"]["code"].split(",")))
 led_assign = list(map(int, config["led"]["assign"].split(",")))
 
-led_intens = list(map(float, db.read_setting("lichtprogramm").split(";")))
-led_aktiv = db.read_setting("lichtprogramm", "text")
-
+try:
+	led_intens = list(map(float, db.read_setting("lichtprogramm").split(";")))
+	led_aktiv = db.read_setting("lichtprogramm", "text")
+except:
+	led_intens = [0]
+	led_aktiv = "off"
+	
 licht = led.led(zuordnung=led_assign, intens = led_intens, aktiv = led_aktiv)
 
 remote_ph = funk.RemoteSwitch(int(config["ph"]["outlet"]), outlet_code, int(config["outlet"]["pin"]))
