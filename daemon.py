@@ -69,6 +69,8 @@ config.read("{}/config.ini".format(path))
 outlet_code = list(map(int, config["outlet"]["code"].split(",")))
 led_assign = list(map(int, config["led"]["assign"].split(",")))
 
+if db.read_setting("netzteil") == None: db.write_setting("netzteil", 0)
+
 try:
 	led_intens = list(map(float, db.read_setting("lichtprogramm").split(";")))
 	led_aktiv = db.read_setting("lichtprogramm", "text")
