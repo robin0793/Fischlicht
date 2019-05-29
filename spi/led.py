@@ -126,7 +126,7 @@ class led():
 				
 				
 				while len(intens_wanted) > len(self.intens):
-					self.intens = self.intens.append(0)
+					self.intens = np.append(self.intens, 0)
 				
 				if np.array_equal (intens_wanted, self.intens) == True:
 					log.info("Aktuelles Programm neu setzen")
