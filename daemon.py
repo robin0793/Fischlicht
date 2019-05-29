@@ -75,7 +75,7 @@ try:
 	led_intens = list(map(float, db.read_setting("lichtprogramm").split(";")))
 	led_aktiv = db.read_setting("lichtprogramm", "text")
 except:
-	led_intens = [0]
+	led_intens = list(0)
 	led_aktiv = "off"
 	
 licht = led.led(zuordnung=led_assign, intens = led_intens, aktiv = led_aktiv)
